@@ -11,12 +11,14 @@ export function TripTrackerPage() {
   const tracker = useTripTracker(user)
 
   const path = tracker.currentTrip?.path ?? []
-  const maxSpeed = path.length > 0
-    ? Math.max(...path.map((c) => (c.speed ?? 0) * 3.6))
-    : 0
 
-  const avgSpeed = tracker.elapsedTime > 0
-    ? (tracker.totalDistance / 1000) / (tracker.elapsedTime / 3600)
+  // Use reduce to avoid stack overflow on large path arrays
+  const maxSpeed = path.reduce((max, c) => Math.max(max, (c.speed ?? 0) * 3.6), 0)
+
+  // Average speed over moving points only (excludes stops at traffic lights etc.)
+  const movingPoints = path.filter((c) => (c.speed ?? 0) > 0)
+  const avgSpeed = movingPoints.length > 0
+    ? movingPoints.reduce((sum, c) => sum + (c.speed! * 3.6), 0) / movingPoints.length
     : 0
 
   function handleStart() {

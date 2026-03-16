@@ -1,6 +1,8 @@
-import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip } from 'react-leaflet'
+import { useState } from 'react'
+import { MapContainer, Polyline, CircleMarker, Tooltip } from 'react-leaflet'
 import type { Coordinate } from '../../types'
 import { speedColor, msToKmh } from '../../utils/geo'
+import { ActiveTileLayer, MapLayerSwitcher } from './MapLayerSwitcher'
 
 // ── Coloured route with speed tooltips ──────────────────────────────────────
 function SpeedRoute({ path }: { path: Coordinate[] }) {
@@ -32,6 +34,8 @@ interface TripMapProps {
 }
 
 export function TripMap({ path, height = '100%' }: TripMapProps) {
+  const [layerId, setLayerId] = useState('osm')
+
   if (path.length === 0) {
     return (
       <div
@@ -52,7 +56,7 @@ export function TripMap({ path, height = '100%' }: TripMapProps) {
   ]
 
   return (
-    <div style={{ height }} className="rounded-xl overflow-hidden">
+    <div style={{ height }} className="relative rounded-xl overflow-hidden">
       <MapContainer
         bounds={bounds}
         boundsOptions={{ padding: [30, 30] }}
@@ -60,10 +64,7 @@ export function TripMap({ path, height = '100%' }: TripMapProps) {
         attributionControl={false}
         className="w-full h-full"
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          maxZoom={19}
-        />
+        <ActiveTileLayer layerId={layerId} />
 
         <SpeedRoute path={path} />
 
@@ -85,6 +86,8 @@ export function TripMap({ path, height = '100%' }: TripMapProps) {
           <Tooltip permanent>Фініш</Tooltip>
         </CircleMarker>
       </MapContainer>
+
+      <MapLayerSwitcher layerId={layerId} onChange={setLayerId} />
     </div>
   )
 }

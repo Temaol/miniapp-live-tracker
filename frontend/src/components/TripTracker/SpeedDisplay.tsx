@@ -8,9 +8,10 @@ interface SpeedDisplayProps {
 
 export function SpeedDisplay({ speed, maxSpeed, avgSpeed }: SpeedDisplayProps) {
   const speedColor =
-    speed < 30 ? 'text-green-500' :
-    speed < 60 ? 'text-yellow-500' :
-    speed < 90 ? 'text-orange-500' : 'text-red-500'
+    speed < 20  ? 'text-blue-500' :
+    speed < 60  ? 'text-green-500' :
+    speed < 100 ? 'text-yellow-500' :
+    speed < 150 ? 'text-red-500' : 'text-purple-500'
 
   return (
     <div className="flex items-end justify-between">

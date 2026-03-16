@@ -111,3 +111,44 @@ class Paginated[T](BaseModel):
     page: int
     page_size: int
     has_more: bool
+
+
+# ── Admin schemas ─────────────────────────────────────────────────────────────
+
+class UserStatsOut(BaseModel):
+    """Per-user statistics aggregated from the trips table."""
+    user_id: str
+    username: str
+
+    trip_count: int
+    completed_trip_count: int
+
+    total_distance_km: float        # sum of all trips, km
+    total_duration_hours: float     # sum, hours
+
+    all_time_max_speed: float       # km/h — fastest point ever
+    avg_speed_overall: float        # km/h — average across all trips
+
+    first_trip_at: datetime | None
+    last_trip_at: datetime | None   # proxy for "last seen / last activity"
+    last_trip_name: str | None
+
+    longest_trip_km: float          # distance of single longest trip
+    longest_trip_name: str | None
+
+
+class GlobalStatsOut(BaseModel):
+    """Aggregated stats across all users."""
+    total_users: int
+    total_trips: int
+    total_distance_km: float
+    total_duration_hours: float
+
+    all_time_max_speed: float       # km/h
+    all_time_max_speed_user: str    # username
+
+    most_trips_user: str
+    most_trips_count: int
+
+    most_distance_user: str
+    most_distance_km: float

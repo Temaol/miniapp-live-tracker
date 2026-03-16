@@ -71,19 +71,17 @@ export const useTrackingStore = create<TrackingStore>()((set, get) => ({
       duration: state.elapsedTime,
     }
 
-    // compute avg speed
-    const avgSpeed = trip.duration > 0
-      ? (trip.distance / 1000) / (trip.duration / 3600)
+    // Average speed over moving points only (excludes stops at traffic lights etc.)
+    const movingPoints = trip.path.filter((c) => (c.speed ?? 0) > 0)
+    const avgSpeed = movingPoints.length > 0
+      ? movingPoints.reduce((sum, c) => sum + msToKmh(c.speed!), 0) / movingPoints.length
       : 0
     trip.avgSpeed = Math.round(avgSpeed * 10) / 10
 
-    // compute max speed from path
-    let maxSpeed = 0
-    trip.path.forEach(c => {
-      const kmh = msToKmh(c.speed ?? 0)
-      if (kmh > maxSpeed) maxSpeed = kmh
-    })
-    trip.maxSpeed = Math.round(maxSpeed * 10) / 10
+    // Max speed via reduce (safe for large arrays)
+    trip.maxSpeed = Math.round(
+      trip.path.reduce((max, c) => Math.max(max, msToKmh(c.speed ?? 0)), 0) * 10
+    ) / 10
 
     set({
       isTracking: false,

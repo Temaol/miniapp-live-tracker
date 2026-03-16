@@ -6,9 +6,11 @@ Spec: https://core.telegram.org/bots/webapps#validating-data-received-via-the-mi
 import hashlib
 import hmac
 import json
+import secrets
 from urllib.parse import parse_qsl, unquote
 
-from fastapi import Header, HTTPException, status
+from fastapi import Header, HTTPException, Security, status
+from fastapi.security import APIKeyHeader
 
 from config import settings
 
@@ -92,3 +94,22 @@ def get_current_user(
     x_telegram_init_data: str = Header(default=""),
 ) -> dict:
     return validate_init_data(x_telegram_init_data)
+
+
+# ── Admin auth ────────────────────────────────────────────────────────────────
+# Shown as "🔑 Admin API Key" lock icon in Swagger /docs
+
+_admin_key_scheme = APIKeyHeader(
+    name="X-Admin-API-Key",
+    description="Admin secret key. Set `ADMIN_API_KEY` env var on the server.",
+    auto_error=False,
+)
+
+
+def get_admin(api_key: str | None = Security(_admin_key_scheme)) -> None:
+    """Dependency that allows access only with the correct admin API key."""
+    if not api_key or not secrets.compare_digest(api_key, settings.admin_api_key):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid or missing admin API key",
+        )

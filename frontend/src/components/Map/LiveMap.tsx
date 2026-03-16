@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
-import { MapContainer, TileLayer, Polyline, CircleMarker, useMap } from 'react-leaflet'
+import { useEffect, useState } from 'react'
+import { MapContainer, Polyline, CircleMarker, useMap } from 'react-leaflet'
 import type { Coordinate } from '../../types'
 import { speedColor } from '../../utils/geo'
+import { ActiveTileLayer, MapLayerSwitcher } from './MapLayerSwitcher'
 
 // ── Auto-follow current position ────────────────────────────────────────────
 function MapFollower({ position }: { position: Coordinate | null }) {
@@ -49,23 +50,22 @@ interface LiveMapProps {
 }
 
 export function LiveMap({ path, currentPosition, isTracking }: LiveMapProps) {
+  const [layerId, setLayerId] = useState('osm')
+
   const center: [number, number] = currentPosition
     ? [currentPosition.lat, currentPosition.lng]
     : [50.4501, 30.5234] // default: Kyiv
 
   return (
-    <MapContainer
-      center={center}
-      zoom={15}
-      zoomControl={false}
-      attributionControl={true}
-      className="w-full h-full"
-    >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        maxZoom={19}
-      />
+    <div className="relative w-full h-full">
+      <MapContainer
+        center={center}
+        zoom={15}
+        zoomControl={false}
+        attributionControl={true}
+        className="w-full h-full"
+      >
+        <ActiveTileLayer layerId={layerId} />
 
       {/* Speed-colored route */}
       <SpeedPolyline path={path} />
@@ -91,5 +91,8 @@ export function LiveMap({ path, currentPosition, isTracking }: LiveMapProps) {
       {/* Auto-follow */}
       {isTracking && <MapFollower position={currentPosition} />}
     </MapContainer>
+
+    <MapLayerSwitcher layerId={layerId} onChange={setLayerId} />
+  </div>
   )
 }

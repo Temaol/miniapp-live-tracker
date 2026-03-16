@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useTrackingStore, useTripsStore, useTimerStore } from '../store'
 import { useGeolocation } from './useGeolocation'
+import { api } from '../services/api'
 import type { TelegramUser } from '../types'
 
 export function useTripTracker(user: TelegramUser | null) {
@@ -55,6 +56,12 @@ export function useTripTracker(user: TelegramUser | null) {
     const completedTrip = tracking.stopTracking()
     if (completedTrip) {
       addTrip(completedTrip)
+      // Auto-sync to backend (best-effort — don't block UI on failure)
+      if (user) {
+        api.saveTrip(completedTrip, user).catch(() => {
+          // silently ignore — trip is already safe in localStorage
+        })
+      }
     }
     resetTimer()
     return completedTrip
