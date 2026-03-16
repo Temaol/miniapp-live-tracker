@@ -1,0 +1,13 @@
+[build]
+builder = "NIXPACKS"
+
+[build.nixpacksConfig]
+# VITE_API_URL must be set as a Railway env var (build-time)
+buildCommand = "npm run build"
+
+[deploy]
+startCommand = "npx --yes serve dist -s -l $PORT"
+healthcheckPath = "/"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
